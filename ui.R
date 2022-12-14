@@ -1,4 +1,4 @@
-ui <- navbarPage("SQMxplore",
+shinyUI(navbarPage("SQMxplore",
   # Page Input ----
   tabPanel("Dataset",
     fluidPage("",
@@ -217,3 +217,4 @@ ui <- navbarPage("SQMxplore",
     ) # Close layout
   ) # Close Functions page
 ) # Close UI
+) # Close shinyUI
