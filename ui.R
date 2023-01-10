@@ -1,4 +1,12 @@
-shinyUI(navbarPage("SQMxplore",
+# Load packages
+library(shiny)
+library(shinyFiles)
+library(SQMtools)
+library(ggplot2)
+library(DT)
+library(data.table)
+
+ui <- navbarPage("SQMxplore",
   # Page Input ----
   tabPanel("Dataset",
     fluidPage("",
@@ -217,4 +225,3 @@ shinyUI(navbarPage("SQMxplore",
     ) # Close layout
   ) # Close Functions page
 ) # Close UI
-) # Close shinyUI
