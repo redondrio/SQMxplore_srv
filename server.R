@@ -12,7 +12,7 @@ server <- function(input, output, clientData, session) {
   reactiveData <- reactiveValues()
 
   # Set the paths ----
-  roots <- c(root = ".")
+  roots <- c(root = "/srv/shiny_server/shiny_input")
   shinyDirChoose(input, "samples_path", roots = roots,
     filetypes = c("", "txt", "bigWig", "tsv", "csv", "bw"))
 
