@@ -51,7 +51,7 @@ server <- function(input, output, clientData, session) {
       # add check.names=FALSE to prevent R from changing column names
       if (input$type_load == "Load SQM project") {
         reactiveData$reads_st <- read.csv(paste0(res_dir(),
-          paste0("22.reads.tsv")), header = TRUE, sep = "\t")
+          paste0("22.reads.tsv")), row.names = 1, header = TRUE, sep = "\t")
         reactiveData$contigs_st <- read.csv(paste0(res_dir(),
           paste0("22.contigs.tsv")), header = TRUE, sep = "\t")
         reactiveData$taxa_st <- read.csv(paste0(res_dir(),
@@ -345,8 +345,7 @@ server <- function(input, output, clientData, session) {
   # Output Summary ----
   # Reads
   reactReadsSum <- reactive({ #create reactive function
-    as.data.frame(reactiveData$reads_st[, -1],
-      row.names = reactiveData$reads_st[, 1])
+    reactiveData$reads_st
   })
   output$reads_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactReadsSum(), options = list(
