@@ -336,10 +336,10 @@ server <- function(input, output, clientData, session) {
   # Update Summary Inputs ----
   observe({
     updateSelectInput(session, "orfs_row1",
-                      choices = reactiveData$orfs_st[, 1]
+                      choices = rownames(reactiveData$orfs_st)
     )
     updateSelectInput(session, "orfs_row2",
-                      choices = reactiveData$orfs_st[, 1]
+                      choices = rownames(reactiveData$orfs_st)
     )
   }) # Close observer
 
