@@ -53,13 +53,13 @@ server <- function(input, output, clientData, session) {
         reactiveData$reads_st <- read.csv(paste0(res_dir(),
           paste0("22.reads.tsv")), row.names = 1, header = TRUE, sep = "\t")
         reactiveData$contigs_st <- read.csv(paste0(res_dir(),
-          paste0("22.contigs.tsv")), header = TRUE, sep = "\t")
+          paste0("22.contigs.tsv")), row.names = 1, header = TRUE, sep = "\t")
         reactiveData$taxa_st <- read.csv(paste0(res_dir(),
-          paste0("22.taxa.tsv")), header = TRUE, sep = "\t")
+          paste0("22.taxa.tsv")), row.names = 1, header = TRUE, sep = "\t")
         reactiveData$orfs_st <- read.csv(paste0(res_dir(),
-          paste0("22.orfs.tsv")), header = TRUE, sep = "\t")
+          paste0("22.orfs.tsv")), row.names = 1, header = TRUE, sep = "\t")
         reactiveData$bins_st <- read.csv(paste0(res_dir(),
-          paste0("22.bins.tsv")), header = TRUE, sep = "\t")
+          paste0("22.bins.tsv")), row.names = 1, header = TRUE, sep = "\t")
       } else { # if no stat files, empty objects
         reactiveData$reads_st <- matrix()
         reactiveData$contigs_st <- matrix()
@@ -368,12 +368,7 @@ server <- function(input, output, clientData, session) {
 
   # Contigs
   reactContigsSum <- reactive({ #create reactive function
-    df <- as.data.frame(reactiveData$contigs_st[, -1],
-      row.names = reactiveData$contigs_st[, 1])
-    if (ncol(df) == 1) {
-      names(df) <- c("Value")
-      }
-    df
+    reactiveData$contigs_st
   })
   output$contigs_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactContigsSum(), options = list(
@@ -384,8 +379,7 @@ server <- function(input, output, clientData, session) {
 
   # Taxa
   reactTaxaSum <- reactive({ #create reactive function
-    as.data.frame(reactiveData$taxa_st[, -1],
-      row.names = reactiveData$taxa_st[, 1])
+    reactiveData$taxa_st
   })
   output$taxa_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactTaxaSum(), options = list(
@@ -396,8 +390,7 @@ server <- function(input, output, clientData, session) {
 
   # Orfs
   reactOrfsSum <- reactive({ #create reactive function
-    as.data.frame(reactiveData$orfs_st[, -1],
-      row.names = reactiveData$orfs_st[, 1])
+    reactiveData$orfs_st
   })
   output$orfs_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactOrfsSum(), options = list(
@@ -419,13 +412,7 @@ server <- function(input, output, clientData, session) {
 
   # Bins
   reactBinsSum <- reactive({ #create reactive function
-    df <- as.data.frame(
-      reactiveData$bins_st[, -1],
-      row.names = reactiveData$bins_st[, 1])
-    if (ncol(df) == 1) {
-      names(df) <- c("Value")
-      }
-    df
+    reactiveData$bins_st
   })
   output$bins_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactBinsSum(), options = list(
