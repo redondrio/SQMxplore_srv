@@ -58,6 +58,7 @@ server <- function(input, output, clientData, session) {
           paste0("22.taxa.tsv")), row.names = 1, header = TRUE, sep = "\t")
         reactiveData$orfs_st <- read.csv(paste0(res_dir(),
           paste0("22.orfs.tsv")), row.names = 1, header = TRUE, sep = "\t")
+        reactiveData$orfs_st[is.na(reactiveData$orfs_st)] <- 0
         reactiveData$bins_st <- read.csv(paste0(res_dir(),
           paste0("22.bins.tsv")), row.names = 1, header = TRUE, sep = "\t")
       } else { # if no stat files, empty objects
