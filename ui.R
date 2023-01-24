@@ -163,7 +163,17 @@ ui <- navbarPage("SQMxplore",
       # Main panel for displaying outputs ----
       mainPanel(
         plotOutput(outputId = "taxPlot"),
-        downloadButton("taxPlotDown", "Download Plot")
+          downloadButton("taxPlotDown", "Download Plot"),
+          selectizeInput("dev_taxPlot", "Select device",
+            choices = c("pdf", "jpeg", "png"),
+            selected = "pdf"),
+          numericInput("width_taxPlot", "Plot width",
+            value = 20, min = 0),
+          numericInput("height_taxPlot", "Plot height",
+            value = 20, min = 0),
+          selectizeInput("unit_taxPlot", "Units",
+            choices = c("in", "cm", "mm", "px"),
+            selected = "cm")
       ) # Close main panel
     ) # Close layout
   ), # Close Taxonomy page
@@ -189,21 +199,33 @@ ui <- navbarPage("SQMxplore",
 
         h4("Functions"),
         conditionalPanel(
-          condition = "!input.sel_fun",
+            condition = "!input.sel_fun && !input.load_fun",
           # Input: Number for the number of taxa
           numericInput("n_fun", "Choose the number of functions",
             value = 1, min = 0) #updated
         ),
-        conditionalPanel(
-          condition = "input.sel_fun",
-          selectizeInput("fun_fun", "Selected functions", #updated
-            choices = NULL,
-            selected  = NULL,
-            multiple = TRUE)
-        ),
-        # Input: Write function names and override N
-        checkboxInput("sel_fun", "Manually pick plotted functions",
-          value = FALSE),
+
+          # Input: Write function names and override N
+          checkboxInput("sel_fun", "Manually pick plotted functions",
+            value = FALSE),
+          conditionalPanel(
+            condition = "input.sel_fun",
+            selectizeInput("fun_fun", "Selected functions",
+              choices = NULL,
+              selected  = NULL,
+              multiple = TRUE) #updated
+          ),
+
+          # Input: Load functions from ref file and override N
+          checkboxInput("load_fun", "Load reference functions from file",
+            value = FALSE),
+          conditionalPanel(
+            condition = "input.load_fun",
+            selectizeInput("ref_fun", "Selected functions",
+              choices = NULL,
+              selected  = NULL,
+              multiple = TRUE) #updated
+          ),
 
         h4("Options"),
         conditionalPanel(
@@ -219,9 +241,19 @@ ui <- navbarPage("SQMxplore",
       # Main panel for displaying outputs ----
       mainPanel(
         # Output: Histogram
-        plotOutput(outputId = "funPlot"),
-        downloadButton("funPlotDown", "Download Plot")
-      ) # Close main panel
-    ) # Close layout
+          plotOutput(outputId = "funPlot"),
+          downloadButton("funPlotDown", "Download Plot"),
+          selectizeInput("dev_funPlot", "Select device",
+            choices = c("pdf", "jpeg", "png"),
+            selected = "pdf"),
+          numericInput("width_funPlot", "Plot width",
+            value = 20, min = 0),
+          numericInput("height_funPlot", "Plot height",
+            value = 20, min = 0),
+          selectizeInput("unit_funPlot", "Units",
+            choices = c("in", "cm", "mm", "px"),
+            selected = "cm")
+        ) # Close main panel
+      ) # Close layout
   ) # Close Functions page
 ) # Close UI

@@ -39,6 +39,7 @@ server <- function(input, output, clientData, session) {
   observeEvent(input$proj_load, {
     tryCatch({
       showModal(modalDialog(title = "Loading", easyclose = TRUE))
+      # Load the SQM object
       reactiveData$SQM <- switch(input$type_load,
         "Load SQM project" = {
           loadSQMlite(tab_dir())
@@ -69,6 +70,12 @@ server <- function(input, output, clientData, session) {
         reactiveData$bins_st <- matrix()
       }
       output$out_project <- renderText(isolate(input$project))
+      # Load the reference identifiers
+      ref_ids_path <- paste0(
+        parseDirPath(roots, input$samples_path), "/id_list.ref")
+      if (file.exists(ref_ids_path)) {
+        reactiveData$ref_ids <- check_ref(reactiveData$SQM, ref_ids_path)
+      }
       showModal(modalDialog(title = "Loaded",
         "Your project is ready", easyclose = TRUE))
     }, warning = function(warn) {
@@ -161,7 +168,12 @@ server <- function(input, output, clientData, session) {
       paste("Tax_plot_", Sys.time(), ".pdf", sep = "")
     },
     content = function(file) {
-      ggsave(file, reactTaxPlot(), device = "pdf")
+      ggsave(file, reactTaxPlot(),
+        device = input$dev_taxPlot,
+        units = input$unit_taxPlot,
+        width = input$width_taxPlot,
+        height = input$height_taxPlot
+      )
     }
   )
 
@@ -200,15 +212,32 @@ server <- function(input, output, clientData, session) {
       value = def_n_fun,
       max = length(uniques)
     )
-  }) # Close observer
+  }) # Close n_fun update observer
 
-  observeEvent(c(input$proj_load, input$fun_level_fun), {
+  observeEvent(c(input$proj_load, input$fun_level_fun, input$load_fun), {
+    if ((input$sel_fun) & (input$load_fun)) {
+      updateCheckboxInput(session, "sel_fun",
+      value = FALSE)
+    } #if loading references, will deactivate manual selection if already active
     updateSelectizeInput(session, "fun_fun",
       choices = rownames(
         reactiveData$SQM[["functions"]][[input$fun_level_fun]][["abund"]]),
       server = TRUE
     )
-  }) # Close fun_level_fun observer
+  }) # Close fun_fun update observer
+
+  observeEvent(c(input$proj_load, input$fun_level_fun, input$sel_fun), {
+    if ((input$load_fun) & (input$sel_fun)) {
+      updateCheckboxInput(session, "load_fun",
+      value = FALSE)
+    } #if manually selecting, will deactivate references if already active
+    updateSelectizeInput(session, "ref_fun",
+      choices = rownames(
+        reactiveData$SQM[["functions"]][[input$fun_level_fun]][["abund"]]),
+      selected = reactiveData$ref_ids[["functions"]][[input$fun_level_fun]],
+      server = TRUE
+    )
+  }) # Cloase ref_fun update observer
 
   # Output Functions ----
   reactFunPlot <- reactive({
@@ -217,6 +246,15 @@ server <- function(input, output, clientData, session) {
                     fun_level = input$fun_level_fun,
                     count = input$count_fun,
                     fun = input$fun_fun,
+                    samples = input$samples_fun,
+                    ignore_unmapped = input$unmapped_fun,
+                    ignore_unclassified = input$unclass_fun,
+                    base_size = input$base_size_fun)
+    } else if (input$load_fun) {
+      plotFunctions(reactiveData$SQM,
+                    fun_level = input$fun_level_fun,
+                    count = input$count_fun,
+                    fun = input$ref_fun,
                     samples = input$samples_fun,
                     ignore_unmapped = input$unmapped_fun,
                     ignore_unclassified = input$unclass_fun,
@@ -242,7 +280,12 @@ server <- function(input, output, clientData, session) {
       paste("Fun_plot_", Sys.time(), ".pdf", sep = "")
     },
     content = function(file) {
-      ggsave(file, reactFunPlot(), device = "pdf")
+      ggsave(file, reactFunPlot(),
+        device = input$dev_funPlot,
+        units = input$unit_funPlot,
+        width = input$width_funPlot,
+        height = input$height_funPlot
+      )
     }
   )
 
@@ -336,17 +379,18 @@ server <- function(input, output, clientData, session) {
   # Update Summary Inputs ----
   observe({
     updateSelectInput(session, "orfs_row1",
-                      choices = rownames(reactiveData$orfs_st)
+                      choices = reactiveData$orfs_st[, 1]
     )
     updateSelectInput(session, "orfs_row2",
-                      choices = rownames(reactiveData$orfs_st)
+                      choices = reactiveData$orfs_st[, 1]
     )
   }) # Close observer
 
   # Output Summary ----
   # Reads
   reactReadsSum <- reactive({ #create reactive function
-    reactiveData$reads_st
+    as.data.frame(reactiveData$reads_st[, -1],
+      row.names = reactiveData$reads_st[, 1])
   })
   output$reads_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactReadsSum(), options = list(
@@ -369,7 +413,12 @@ server <- function(input, output, clientData, session) {
 
   # Contigs
   reactContigsSum <- reactive({ #create reactive function
-    reactiveData$contigs_st
+    df <- as.data.frame(reactiveData$contigs_st[, -1],
+      row.names = reactiveData$contigs_st[, 1])
+    if (ncol(df) == 1) {
+      names(df) <- c("Value")
+      }
+    df
   })
   output$contigs_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactContigsSum(), options = list(
@@ -380,7 +429,8 @@ server <- function(input, output, clientData, session) {
 
   # Taxa
   reactTaxaSum <- reactive({ #create reactive function
-    reactiveData$taxa_st
+    as.data.frame(reactiveData$taxa_st[, -1],
+      row.names = reactiveData$taxa_st[, 1])
   })
   output$taxa_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactTaxaSum(), options = list(
@@ -391,7 +441,8 @@ server <- function(input, output, clientData, session) {
 
   # Orfs
   reactOrfsSum <- reactive({ #create reactive function
-    reactiveData$orfs_st
+    as.data.frame(reactiveData$orfs_st[, -1],
+      row.names = reactiveData$orfs_st[, 1])
   })
   output$orfs_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactOrfsSum(), options = list(
@@ -413,7 +464,13 @@ server <- function(input, output, clientData, session) {
 
   # Bins
   reactBinsSum <- reactive({ #create reactive function
-    reactiveData$bins_st
+    df <- as.data.frame(
+      reactiveData$bins_st[, -1],
+      row.names = reactiveData$bins_st[, 1])
+    if (ncol(df) == 1) {
+      names(df) <- c("Value")
+      }
+    df
   })
   output$bins_sum <- DT::renderDataTable({ #generate output
     DT::datatable(reactBinsSum(), options = list(
