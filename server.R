@@ -5,6 +5,7 @@ library(SQMtools)
 library(ggplot2)
 library(DT)
 library(data.table)
+source("parse_stats.R")
 
 # Server ----
 server <- function(input, output, clientData, session) {
